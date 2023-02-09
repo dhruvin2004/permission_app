@@ -1,99 +1,158 @@
 import 'package:flutter/material.dart';
+
 import 'package:permission_handler/permission_handler.dart';
 
 void main() {
-  runApp(MyApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(
+    MyApp()
+  );
+}
+class MyApp extends StatefulWidget {
+  const MyApp({Key? key}) : super(key: key);
+
+  @override
+  State<MyApp> createState() => _MyAppState();
 }
 
-class MyApp extends StatelessWidget{
+class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: "Test App",
-      home: HomePage(),
+      theme: ThemeData(
+        useMaterial3: true,
+      ),
+      debugShowCheckedModeBanner: false,
+      home: const PermissionApp(),
     );
   }
 }
 
-class HomePage extends StatefulWidget{
+class PermissionApp extends StatefulWidget {
+  const PermissionApp({Key? key}) : super(key: key);
+
   @override
-  _HomePageState createState() => _HomePageState();
+  State<PermissionApp> createState() => _PermissionAppState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _PermissionAppState extends State<PermissionApp> {
+  snackBar() async {
+    return ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text((await Permission.camera.status).toString()),
+    ));
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text("Request Permission"),
-          backgroundColor: Colors.redAccent,
+      appBar: AppBar(
+        title: const Text("Permission App", style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold, fontSize: 18),),
+        backgroundColor: Colors.white,
+        centerTitle: true,
+      ),
+      body: Center(
+        child: ListView(
+          children: [
+            ElevatedButton(
+              child: const Text("Camera Permission"),
+              onPressed: () async {
+                var status = await Permission.camera.request();
+                if(status.isGranted) {
+                  snackBar();
+                }
+              },
+            ),
+            ElevatedButton(
+              child: const Text("Storage Permission"),
+              onPressed: () async {
+                var status = await Permission.storage.request();
+                if(status.isGranted) {
+                  snackBar();
+                }
+              },
+            ),
+            ElevatedButton(
+              child: const Text("Location Permission"),
+              onPressed: () async {
+                var status = await Permission.location.request();
+                if(status.isGranted) {
+                  snackBar();
+                }
+              },
+            ),
+            ElevatedButton(
+              child: const Text("Photos Permission"),
+              onPressed: () async {
+                var status = await Permission.photos.request();
+                if(status.isGranted) {
+                  snackBar();
+                }
+              },
+            ),
+            ElevatedButton(
+              child: const Text("Contacts Permission"),
+              onPressed: () async {
+                var status = await Permission.contacts.request();
+                if(status.isGranted) {
+                  snackBar();
+                }
+              },
+            ),
+            ElevatedButton(
+              child: const Text("SMS Permission"),
+              onPressed: () async {
+                var status = await Permission.sms.request();
+                if(status.isGranted) {
+                  snackBar();
+                }
+              },
+            ),
+            ElevatedButton(
+              child: const Text("Phone Permission"),
+              onPressed: () async {
+                var status = await Permission.phone.request();
+                if(status.isGranted) {
+                  snackBar();
+                }
+              },
+            ),
+            ElevatedButton(
+              child: const Text("Calendar Permission"),
+              onPressed: () async {
+                var status = await Permission.calendar.request();
+                if(status.isGranted) {
+                  snackBar();
+                }
+              },
+            ),
+            ElevatedButton(
+              child: const Text("All Permission"),
+              onPressed: () async {
+                Map<Permission, PermissionStatus> _permission = await [
+                  Permission.location,
+                  Permission.storage,
+                  Permission.phone,
+                  Permission.camera,
+                  Permission.audio,
+                  Permission.bluetooth,
+                  Permission.calendar,
+                  Permission.contacts,
+                  Permission.videos,
+                  Permission.speech,
+                  Permission.sms,
+                  Permission.photos,
+                  Permission.notification
+                ].request();
+                if(_permission[0]!.isGranted || _permission[1]!.isGranted || _permission[2]!.isGranted || _permission[3]!.isGranted || _permission[4]!.isGranted
+                    || _permission[5]!.isGranted || _permission[6]!.isGranted || _permission[7]!.isGranted || _permission[8]!.isGranted || _permission[9]!.isGranted
+                    || _permission[10]!.isGranted || _permission[11]!.isGranted || _permission[12]!.isGranted) {
+                  print("Multiple Permission is Successfully Done.....");
+                  snackBar();
+                }
+              },
+            ),
+          ],
         ),
-        body: Container(
-          alignment: Alignment.center,
-          padding: EdgeInsets.all(20),
-          child: Column(
-            children: [
-              Container(
-                child: ElevatedButton(
-                  child: Text("Request Single Permission"),
-                  onPressed: () async {
-                    if (await Permission.location.request().isGranted) {
-                      // Either the permission was already granted before or the user just granted it.
-                      print("Location Permission is granted");
-                    }else{
-                      print("Location Permission is denied.");
-                    }
-                  },
-                ),
-              ),
-
-              Container(
-                child: ElevatedButton(
-                  child: Text("Request Multiple Permission"),
-                  onPressed: () async {
-                    // You can request multiple permissions at once.
-                    Map<Permission, PermissionStatus> statuses = await [
-                      Permission.location,
-                      Permission.camera,
-                      //add more permission to request here.
-                    ].request();
-
-                    if(statuses[Permission.location]!.isDenied){
-                      print("Location permission is denied.");
-                    }
-
-                    if(statuses[Permission.camera]!.isDenied){
-                      print("Camera permission is denied.");
-                    }
-                  },
-                ),
-              ),
-
-              Container(
-                child: ElevatedButton(
-                  child: Text("Check Camera Permission"),
-                  onPressed: () async {
-                    //check permission without request popup
-                    var status = await Permission.camera.status;
-                    if (status.isDenied) {
-                      // We didn't ask for permission yet or the permission has been denied before but not permanently.
-                      print("Permission is denined.");
-                    }else if(status.isGranted){
-                      //permission is already granted.
-                      print("Permission is already granted.");
-                    }else if(status.isPermanentlyDenied){
-                      //permission is permanently denied.
-                      print("Permission is permanently denied");
-                    }else if(status.isRestricted){
-                      //permission is OS restricted.
-                      print("Permission is OS restricted.");
-                    }
-                  },
-                ),
-              )
-            ],
-          ),
-        )
+      ),
     );
   }
 }
